@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Video Feed - Học sinh Tân Cảng</title>
+    <style>
+        /* Cài đặt chung */
+        body {
+            margin: 0;
+            padding: 0;
+            background-color: #0f0f0f; /* Nền tối giống TikTok */
+            font-family: Arial, sans-serif;
+            color: white;
+        }
+
+        /* Tiêu đề trang */
+        .header {
+            text-align: center;
+            padding: 20px;
+            font-size: 22px;
+            font-weight: bold;
+            background-color: #1a1a1a;
+            border-bottom: 1px solid #333;
+            text-transform: uppercase;
+        }
+
+        /* Lưới chứa các video */
+        .video-feed {
+            display: grid;
+            /* Tự động chia cột, mỗi video rộng tối thiểu 250px */
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: 16px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Thẻ chứa từng video */
+        .video-card {
+            position: relative;
+            border-radius: 12px;
+            overflow: hidden;
+            aspect-ratio: 9 / 16; /* Tỷ lệ khung hình dọc chuẩn video ngắn */
+            background-color: #000;
+            cursor: pointer;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+            transition: transform 0.2s;
+        }
+
+        .video-card:hover {
+            transform: scale(1.02);
+        }
+
+        /* Ảnh thumbnail */
+        .video-card img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover; /* Cắt ảnh cho vừa khung dọc */
+            opacity: 0.85;
+            transition: opacity 0.3s;
+        }
+
+        .video-card:hover img {
+            opacity: 1;
+        }
+
+        /* Nút Play giả lập */
+        .play-icon {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60px;
+            height: 60px;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(4px);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+
+        .video-card:hover .play-icon {
+            opacity: 1;
+        }
+
+        /* Lớp phủ thông tin (Tiêu đề, lượt xem) */
+        .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            padding: 20px 15px 15px;
+            background: linear-gradient(to top, rgba(0,0,0,0.9), transparent);
+        }
+
+        .video-title {
+            font-size: 14px;
+            font-weight: bold;
+            margin: 0 0 8px 0;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2; /* Giới hạn 2 dòng */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-transform: capitalize;
+        }
+
+        .video-stats {
+            font-size: 12px;
+            color: #ccc;
+            display: flex;
+            gap: 15px;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="header">Video Mới Nhất</div>
+
+    <div class="video-feed" id="feedContainer">
+        <!-- Các thẻ video sẽ được tạo tự động bằng JavaScript ở đây -->
+    </div>
+
+    <script>
+        // Từ khóa tiêu đề chung cho tất cả các video
+        const chungTitle = "em học sinh tân cảng và cô giáo mới mẻ";
+
+        // Danh sách dữ liệu video (Bạn hãy thay đổi tên file ảnh cho đúng với máy của bạn)
+        const videos = [
+            {
+                title: chungTitle,
+                // Thay 'anh1.jpg' bằng tên file ảnh thật của bạn
+                image: "https://picsum.photos/400/700?random=1", 
+                likes: "545",
+                views: "562.5k",
+                comments: "177"
+            },
+            {
+                title: chungTitle,
+                // Thay 'anh2.jpg' bằng tên file ảnh thật của bạn
+                image: "https://picsum.photos/400/700?random=2", 
+                likes: "1.2k",
+                views: "1.5M",
+                comments: "320"
+            },
+            {
+                title: chungTitle,
+                // Thay 'anh3.jpg' bằng tên file ảnh thật của bạn
+                image: "https://picsum.photos/400/700?random=3", 
+                likes: "890",
+                views: "300k",
+                comments: "45"
+            },
+            {
+                title: chungTitle,
+                // Thay 'anh4.jpg' bằng tên file ảnh thật của bạn
+                image: "https://picsum.photos/400/700?random=4", 
+                likes: "2.1k",
+                views: "800k",
+                comments: "112"
+            },
+            {
+                title: chungTitle,
+                // Thay 'anh5.jpg' bằng tên file ảnh thật của bạn
+                image: "https://picsum.photos/400/700?random=5", 
+                likes: "430",
+                views: "150k",
+                comments: "20"
+            },
+            {
+                title: chungTitle,
+                // Thay 'anh6.jpg' bằng tên file ảnh thật của bạn
+                image: "https://picsum.photos/400/700?random=6", 
+                likes: "3.5k",
+                views: "2.1M",
+                comments: "540"
+            }
+        ];
+
+        const feedContainer = document.getElementById('feedContainer');
+
+        // Hàm tạo các thẻ video
+        function renderVideos() {
+            videos.forEach(video => {
+                const card = document.createElement('div');
+                card.className = 'video-card';
+                
+                // Xử lý sự kiện khi click vào video
+                card.onclick = () => {
+                    alert(`Đang phát video:\n"${video.title}"\n\n(Trong thực tế, video sẽ phát ở đây)`);
+                };
+
+                card.innerHTML = `
+                    <img src="${video.image}" alt="${video.title}">
+                    <div class="play-icon">▶</div>
+                    <div class="overlay">
+                        <h3 class="video-title">${video.title}</h3>
+                        <div class="video-stats">
+                            <span>❤️ ${video.likes}</span>
+                            <span>💬 ${video.comments}</span>
+                            <span>👁️ ${video.views}</span>
+                        </div>
+                    </div>
+                `;
+                
+                feedContainer.appendChild(card);
+            });
+        }
+
+        // Khởi chạy render
+        renderVideos();
+    </script>
+
+</body>
+</html>
